@@ -5,7 +5,7 @@ import './Gallery.css';
 
 const toArr = (v) => (Array.isArray(v) ? v : []);
 const CATEGORIES = ['all', 'construction', 'welfare', 'events', 'general'];
-const labelMap = { all: 'All', construction: 'ðŸ—ï¸ Construction', welfare: 'ðŸ¤ Social Welfare', events: 'ðŸŽ‰ Events', general: 'ðŸ“· General' };
+const labelMap = { all: 'All', construction: 'Construction', welfare: 'Social Welfare', events: 'Events', general: 'General' };
 
 export default function Gallery() {
     const [images, setImages] = useState([]);
