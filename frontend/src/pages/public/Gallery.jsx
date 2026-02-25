@@ -1,9 +1,10 @@
 import { useEffect, useState } from 'react';
-import api from '../../api/axios';
+import api, { IMAGE_BASE } from '../../api/axios';
 import './Gallery.css';
 
-const API_BASE = 'http://localhost:5000';
+const toArr = (v) => (Array.isArray(v) ? v : []);
 const CATEGORIES = ['all', 'construction', 'welfare', 'events', 'general'];
+const labelMap = { all: 'All', construction: '🏗️ Construction', welfare: '🤝 Social Welfare', events: '🎉 Events', general: '📷 General' };
 
 export default function Gallery() {
     const [images, setImages] = useState([]);
@@ -16,21 +17,23 @@ export default function Gallery() {
     useEffect(() => {
         Promise.all([api.get('/gallery?section=gallery_page'), api.get('/gallery'), api.get('/content/gallery')])
             .then(([gp, all, c]) => {
-                // Combine gallery_page section + any others not in home
-                const combined = [...gp.data];
-                all.data.forEach(img => { if (!combined.find(i => i._id === img._id)) combined.push(img); });
+                const gpArr = toArr(gp.data);
+                const allArr = toArr(all.data);
+                // Merge: gallery_page first, then any remaining
+                const ids = new Set(gpArr.map(i => i._id));
+                const combined = [...gpArr, ...allArr.filter(i => !ids.has(i._id))];
                 setImages(combined);
                 setFiltered(combined);
-                setContent(c.data);
-            }).finally(() => setLoading(false));
+                setContent(c.data || {});
+            })
+            .catch(() => { })
+            .finally(() => setLoading(false));
     }, []);
 
     const filter = (cat) => {
         setActiveCategory(cat);
         setFiltered(cat === 'all' ? images : images.filter(i => i.category === cat));
     };
-
-    const labelMap = { all: 'All', construction: '🏗️ Construction', welfare: '🤝 Social Welfare', events: '🎉 Events', general: '📷 General' };
 
     if (loading) return <div className="loader"><div className="spinner" /><p>Loading…</p></div>;
 
@@ -65,7 +68,7 @@ export default function Gallery() {
                         <div className="gallery-masonry">
                             {filtered.map(img => (
                                 <div key={img._id} className="gallery-item" onClick={() => setLightbox(img)}>
-                                    <img src={`${API_BASE}${img.url}`} alt={img.caption} loading="lazy" />
+                                    <img src={`${IMAGE_BASE}${img.url}`} alt={img.caption} loading="lazy" />
                                     <div className="gallery-item-overlay">
                                         <span className="gallery-item-zoom">🔍</span>
                                         {img.caption && <div className="gallery-item-caption">{img.caption}</div>}
@@ -82,7 +85,7 @@ export default function Gallery() {
                 <div className="lightbox" onClick={() => setLightbox(null)}>
                     <div className="lightbox-inner" onClick={e => e.stopPropagation()}>
                         <button className="lightbox-close" onClick={() => setLightbox(null)}>✕</button>
-                        <img src={`${API_BASE}${lightbox.url}`} alt={lightbox.caption} />
+                        <img src={`${IMAGE_BASE}${lightbox.url}`} alt={lightbox.caption} />
                         {lightbox.caption && <div className="lightbox-caption">{lightbox.caption}</div>}
                     </div>
                 </div>

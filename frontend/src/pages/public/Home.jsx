@@ -1,9 +1,9 @@
 import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
-import api from '../../api/axios';
+import api, { IMAGE_BASE } from '../../api/axios';
 import './Home.css';
 
-const API_BASE = 'http://localhost:5000';
+const toArr = (v) => (Array.isArray(v) ? v : []);
 
 export default function Home() {
     const [settings, setSettings] = useState({});
@@ -23,21 +23,21 @@ export default function Home() {
             api.get('/gallery?section=progress_update'),
             api.get('/members'),
         ]).then(([s, c, hb, hg, up, mem]) => {
-            setSettings(s.data);
-            setContent(c.data);
-            setHeroBanner(hb.data);
-            setHomeGallery(hg.data.slice(0, 6));
-            setUpdates(up.data.slice(0, 4));
-            setMembers(mem.data.slice(0, 4));
-        }).finally(() => setLoading(false));
+            setSettings(s.data || {});
+            setContent(c.data || {});
+            setHeroBanner(toArr(hb.data));
+            setHomeGallery(toArr(hg.data).slice(0, 6));
+            setUpdates(toArr(up.data).slice(0, 4));
+            setMembers(toArr(mem.data).slice(0, 4));
+        }).catch(() => { }).finally(() => setLoading(false));
     }, []);
 
     if (loading) return <div className="loader"><div className="spinner" /><p>Loading…</p></div>;
 
     const heroBg = heroBanner[0]?.url
-        ? `${API_BASE}${heroBanner[0].url}`
+        ? `${IMAGE_BASE}${heroBanner[0].url}`
         : settings.heroBannerUrl
-            ? `${API_BASE}${settings.heroBannerUrl}`
+            ? `${IMAGE_BASE}${settings.heroBannerUrl}`
             : null;
 
     return (
@@ -102,7 +102,7 @@ export default function Home() {
                     <div className="about-snippet-img">
                         <div className="about-img-frame">
                             {content.about_snippet?.extra?.imageUrl ? (
-                                <img src={`${API_BASE}${content.about_snippet.extra.imageUrl}`} alt="About" />
+                                <img src={`${IMAGE_BASE}${content.about_snippet.extra.imageUrl}`} alt="About" />
                             ) : (
                                 <div className="img-placeholder" style={{ height: '100%', borderRadius: 16, minHeight: 280, fontSize: '4rem' }}>🛕</div>
                             )}
@@ -123,7 +123,7 @@ export default function Home() {
                         <div className="gallery-grid">
                             {homeGallery.map(img => (
                                 <div key={img._id} className="gallery-card card">
-                                    <img src={`${API_BASE}${img.url}`} alt={img.caption} loading="lazy" />
+                                    <img src={`${IMAGE_BASE}${img.url}`} alt={img.caption} loading="lazy" />
                                     {img.caption && <div className="gallery-card-caption">{img.caption}</div>}
                                 </div>
                             ))}
@@ -148,7 +148,7 @@ export default function Home() {
                             {updates.map(img => (
                                 <div key={img._id} className="update-card card">
                                     <div className="update-img-wrap">
-                                        <img src={`${API_BASE}${img.url}`} alt={img.caption} loading="lazy" />
+                                        <img src={`${IMAGE_BASE}${img.url}`} alt={img.caption} loading="lazy" />
                                         <div className="update-overlay">
                                             <span className="badge badge-saffron">Update</span>
                                         </div>
@@ -175,7 +175,7 @@ export default function Home() {
                                 <div key={m._id} className="member-snap-card card">
                                     <div className="member-snap-photo">
                                         {m.photoUrl
-                                            ? <img src={`${API_BASE}${m.photoUrl}`} alt={m.name} />
+                                            ? <img src={`${IMAGE_BASE}${m.photoUrl}`} alt={m.name} />
                                             : <div className="img-placeholder member-placeholder">👤</div>
                                         }
                                     </div>

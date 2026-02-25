@@ -1,8 +1,8 @@
 import { useEffect, useState } from 'react';
-import api from '../../api/axios';
+import api, { IMAGE_BASE } from '../../api/axios';
 import './Members.css';
 
-const API_BASE = 'http://localhost:5000';
+const toArr = (v) => (Array.isArray(v) ? v : []);
 
 export default function Members() {
     const [members, setMembers] = useState([]);
@@ -11,7 +11,11 @@ export default function Members() {
 
     useEffect(() => {
         Promise.all([api.get('/members'), api.get('/content/members')])
-            .then(([m, c]) => { setMembers(m.data); setContent(c.data); })
+            .then(([m, c]) => {
+                setMembers(toArr(m.data));
+                setContent(c.data || {});
+            })
+            .catch(() => { })
             .finally(() => setLoading(false));
     }, []);
 
@@ -47,7 +51,7 @@ export default function Members() {
                                 <div key={m._id} className="member-card card fade-up" style={{ animationDelay: `${i * 0.05}s` }}>
                                     <div className="member-photo-wrap">
                                         {m.photoUrl
-                                            ? <img src={`${API_BASE}${m.photoUrl}`} alt={m.name} className="member-photo" />
+                                            ? <img src={`${IMAGE_BASE}${m.photoUrl}`} alt={m.name} className="member-photo" />
                                             : <div className="member-photo-placeholder">👤</div>
                                         }
                                         <div className="member-number">#{String(i + 1).padStart(2, '0')}</div>
