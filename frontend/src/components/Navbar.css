@@ -1,0 +1,139 @@
+.navbar {
+    position: sticky;
+    top: 0;
+    z-index: 1000;
+    background: rgba(251, 247, 240, 0.85);
+    backdrop-filter: blur(16px);
+    border-bottom: 1px solid rgba(212, 160, 23, 0.2);
+    transition: var(--transition);
+}
+
+.navbar.scrolled {
+    background: rgba(251, 247, 240, 0.97);
+    box-shadow: var(--shadow-sm);
+}
+
+.navbar-inner {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    height: 72px;
+}
+
+.navbar-brand {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    text-decoration: none;
+}
+
+.navbar-logo {
+    width: 48px;
+    height: 48px;
+    object-fit: contain;
+    border-radius: 50%;
+}
+
+.navbar-logo-text {
+    font-size: 2rem;
+}
+
+.navbar-name {
+    font-family: 'Cinzel', serif;
+    font-weight: 700;
+    font-size: 1rem;
+    color: var(--maroon-dark);
+    line-height: 1.2;
+}
+
+.navbar-tagline {
+    font-size: 0.65rem;
+    color: var(--text-light);
+    letter-spacing: 0.04em;
+}
+
+.navbar-links {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+}
+
+.nav-link {
+    padding: 8px 14px;
+    border-radius: 50px;
+    font-size: 0.875rem;
+    font-weight: 500;
+    color: var(--text-mid);
+    transition: var(--transition);
+    white-space: nowrap;
+}
+
+.nav-link:hover {
+    background: rgba(255, 111, 27, 0.08);
+    color: var(--saffron);
+}
+
+.nav-link.active {
+    background: linear-gradient(135deg, var(--saffron), var(--gold));
+    color: var(--white);
+    font-weight: 600;
+}
+
+.hamburger {
+    display: none;
+    flex-direction: column;
+    gap: 5px;
+    padding: 8px;
+    background: none;
+    cursor: pointer;
+}
+
+.ham-bar {
+    display: block;
+    width: 24px;
+    height: 2px;
+    background: var(--maroon-dark);
+    border-radius: 2px;
+    transition: var(--transition);
+}
+
+.ham-bar.open:nth-child(1) {
+    transform: rotate(45deg) translate(5px, 5px);
+}
+
+.ham-bar.open:nth-child(2) {
+    opacity: 0;
+}
+
+.ham-bar.open:nth-child(3) {
+    transform: rotate(-45deg) translate(5px, -5px);
+}
+
+@media (max-width: 860px) {
+    .hamburger {
+        display: flex;
+    }
+
+    .navbar-links {
+        display: none;
+        position: absolute;
+        top: 72px;
+        left: 0;
+        right: 0;
+        flex-direction: column;
+        background: var(--white);
+        padding: 16px;
+        gap: 4px;
+        box-shadow: var(--shadow-md);
+        border-bottom: 3px solid var(--saffron);
+    }
+
+    .navbar-links.open {
+        display: flex;
+    }
+
+    .nav-link {
+        width: 100%;
+        text-align: center;
+    }
+}

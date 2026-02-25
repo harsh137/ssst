@@ -1,0 +1,162 @@
+.about-page {}
+
+/* Mission Vision */
+.mv-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 24px;
+}
+
+.mv-card {
+    padding: 36px;
+    border-radius: var(--radius-lg);
+    position: relative;
+    overflow: hidden;
+}
+
+.mv-card::before {
+    content: '';
+    position: absolute;
+    top: -30px;
+    right: -30px;
+    width: 120px;
+    height: 120px;
+    border-radius: 50%;
+    opacity: 0.1;
+}
+
+.mv-card--mission {
+    background: linear-gradient(135deg, #FFF5EE, #FFE8D6);
+    border-left: 4px solid var(--saffron);
+}
+
+.mv-card--mission::before {
+    background: var(--saffron);
+}
+
+.mv-card--vision {
+    background: linear-gradient(135deg, #FFF9E8, #FFF0C0);
+    border-left: 4px solid var(--gold);
+}
+
+.mv-card--vision::before {
+    background: var(--gold);
+}
+
+.mv-icon {
+    font-size: 2.5rem;
+    margin-bottom: 16px;
+}
+
+.mv-card h3 {
+    font-size: 1.3rem;
+    color: var(--maroon-dark);
+    margin-bottom: 12px;
+}
+
+.mv-card p {
+    color: var(--text-mid);
+    line-height: 1.8;
+}
+
+/* About body */
+.about-body-text {
+    max-width: 760px;
+    margin: 0 auto;
+    text-align: center;
+}
+
+.about-body-text p {
+    color: var(--text-mid);
+    line-height: 1.9;
+    margin-top: 16px;
+    font-size: 1.05rem;
+}
+
+/* Objectives */
+.objectives-section {
+    background: var(--cream);
+}
+
+.objectives-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 20px;
+}
+
+.objective-card {
+    display: flex;
+    gap: 20px;
+    align-items: flex-start;
+    padding: 24px;
+    transition: var(--transition);
+    border-left: 3px solid transparent;
+}
+
+.objective-card:hover {
+    border-left-color: var(--saffron);
+}
+
+.obj-number {
+    font-family: 'Cinzel', serif;
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: var(--gold-light);
+    line-height: 1;
+    min-width: 40px;
+}
+
+.objective-card p {
+    color: var(--text-mid);
+    line-height: 1.7;
+    font-size: 0.9rem;
+}
+
+/* Values */
+.values-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 20px;
+}
+
+.value-card {
+    padding: 28px 20px;
+    text-align: center;
+}
+
+.value-icon {
+    font-size: 2.5rem;
+    margin-bottom: 12px;
+}
+
+.value-card h4 {
+    color: var(--maroon-dark);
+    margin-bottom: 8px;
+    font-size: 1rem;
+}
+
+.value-card p {
+    color: var(--text-light);
+    font-size: 0.85rem;
+    line-height: 1.6;
+}
+
+@media (max-width: 900px) {
+    .mv-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .objectives-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .values-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+}
+
+@media (max-width: 480px) {
+    .values-grid {
+        grid-template-columns: 1fr;
+    }
+}
