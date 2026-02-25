@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 import api from '../../api/axios';
+import { cachedGet } from '../../api/cache';
 import './AboutUs.css';
 
 export default function AboutUs() {
@@ -7,7 +8,10 @@ export default function AboutUs() {
     const [loading, setLoading] = useState(true);
 
     useEffect(() => {
-        api.get('/content/about').then(r => setContent(r.data)).finally(() => setLoading(false));
+        cachedGet(() => api.get('/content/about').then(r => r.data), 'content/about')
+            .then(c => setContent(c || {}))
+            .catch(() => { })
+            .finally(() => setLoading(false));
     }, []);
 
     if (loading) return <div className="loader"><div className="spinner" /><p>Loading…</p></div>;

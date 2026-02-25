@@ -1,6 +1,25 @@
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { AuthProvider, useAuth } from './context/AuthContext';
+import { preload } from './api/cache';
+import api from './api/axios';
 import './index.css';
+
+// Kick off all public API fetches immediately in the background
+// so data is cached before the user navigates to any page
+preload([
+  { key: 'settings', apiFn: () => api.get('/settings').then(r => r.data) },
+  { key: 'content/home', apiFn: () => api.get('/content/home').then(r => r.data) },
+  { key: 'content/about', apiFn: () => api.get('/content/about').then(r => r.data) },
+  { key: 'content/members', apiFn: () => api.get('/content/members').then(r => r.data) },
+  { key: 'content/gallery', apiFn: () => api.get('/content/gallery').then(r => r.data) },
+  { key: 'content/contact', apiFn: () => api.get('/content/contact').then(r => r.data) },
+  { key: 'members/public', apiFn: () => api.get('/members').then(r => r.data) },
+  { key: 'gallery/home_banner', apiFn: () => api.get('/gallery?section=home_banner').then(r => r.data) },
+  { key: 'gallery/home_gallery', apiFn: () => api.get('/gallery?section=home_gallery').then(r => r.data) },
+  { key: 'gallery/progress', apiFn: () => api.get('/gallery?section=progress_update').then(r => r.data) },
+  { key: 'gallery/gallery_page', apiFn: () => api.get('/gallery?section=gallery_page').then(r => r.data) },
+  { key: 'gallery/all_public', apiFn: () => api.get('/gallery').then(r => r.data) },
+]);
 
 // Public Pages
 import PublicLayout from './components/PublicLayout';

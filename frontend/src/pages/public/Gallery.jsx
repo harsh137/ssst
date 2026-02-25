@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 import api, { IMAGE_BASE } from '../../api/axios';
+import { cachedGet } from '../../api/cache';
 import './Gallery.css';
 
 const toArr = (v) => (Array.isArray(v) ? v : []);
@@ -15,16 +16,19 @@ export default function Gallery() {
     const [loading, setLoading] = useState(true);
 
     useEffect(() => {
-        Promise.all([api.get('/gallery?section=gallery_page'), api.get('/gallery'), api.get('/content/gallery')])
+        Promise.all([
+            cachedGet(() => api.get('/gallery?section=gallery_page').then(r => r.data), 'gallery/gallery_page'),
+            cachedGet(() => api.get('/gallery').then(r => r.data), 'gallery/all_public'),
+            cachedGet(() => api.get('/content/gallery').then(r => r.data), 'content/gallery'),
+        ])
             .then(([gp, all, c]) => {
-                const gpArr = toArr(gp.data);
-                const allArr = toArr(all.data);
-                // Merge: gallery_page first, then any remaining
+                const gpArr = toArr(gp);
+                const allArr = toArr(all);
                 const ids = new Set(gpArr.map(i => i._id));
                 const combined = [...gpArr, ...allArr.filter(i => !ids.has(i._id))];
                 setImages(combined);
                 setFiltered(combined);
-                setContent(c.data || {});
+                setContent(c || {});
             })
             .catch(() => { })
             .finally(() => setLoading(false));
@@ -45,20 +49,15 @@ export default function Gallery() {
                     <p>{content.hero?.body || 'A visual journey of our temple construction and social welfare activities'}</p>
                 </div>
             </div>
-
             <section className="section">
                 <div className="container">
-                    {/* Filter Bar */}
                     <div className="gallery-filter-bar">
                         {CATEGORIES.map(cat => (
-                            <button
-                                key={cat}
-                                className={`filter-btn ${activeCategory === cat ? 'active' : ''}`}
-                                onClick={() => filter(cat)}
-                            >{labelMap[cat]}</button>
+                            <button key={cat} className={`filter-btn ${activeCategory === cat ? 'active' : ''}`} onClick={() => filter(cat)}>
+                                {labelMap[cat]}
+                            </button>
                         ))}
                     </div>
-
                     {filtered.length === 0 ? (
                         <div className="empty-state">
                             <div style={{ fontSize: '3rem', marginBottom: 12 }}>📷</div>
@@ -79,8 +78,6 @@ export default function Gallery() {
                     )}
                 </div>
             </section>
-
-            {/* Lightbox */}
             {lightbox && (
                 <div className="lightbox" onClick={() => setLightbox(null)}>
                     <div className="lightbox-inner" onClick={e => e.stopPropagation()}>

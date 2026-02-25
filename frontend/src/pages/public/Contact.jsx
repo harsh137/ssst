@@ -1,17 +1,20 @@
 import { useEffect, useState } from 'react';
 import api from '../../api/axios';
+import { cachedGet } from '../../api/cache';
 import './Contact.css';
 
 export default function Contact() {
     const [settings, setSettings] = useState({});
     const [content, setContent] = useState({});
     const [form, setForm] = useState({ name: '', email: '', phone: '', message: '' });
-    const [status, setStatus] = useState('idle'); // idle | sending | success | error
+    const [status, setStatus] = useState('idle');
     const [msg, setMsg] = useState('');
 
     useEffect(() => {
-        Promise.all([api.get('/settings'), api.get('/content/contact')])
-            .then(([s, c]) => { setSettings(s.data); setContent(c.data); });
+        Promise.all([
+            cachedGet(() => api.get('/settings').then(r => r.data), 'settings'),
+            cachedGet(() => api.get('/content/contact').then(r => r.data), 'content/contact'),
+        ]).then(([s, c]) => { setSettings(s || {}); setContent(c || {}); }).catch(() => { });
     }, []);
 
     const handleChange = e => setForm(f => ({ ...f, [e.target.name]: e.target.value }));
@@ -39,46 +42,33 @@ export default function Contact() {
                     <p>{content.hero?.body || 'We would love to hear from you. Reach out to us anytime.'}</p>
                 </div>
             </div>
-
             <section className="section">
                 <div className="container contact-grid">
-                    {/* Info */}
                     <div className="contact-info">
                         <h2 className="section-title" style={{ textAlign: 'left' }}>Get In Touch</h2>
                         <div className="ornamental-divider" style={{ justifyContent: 'flex-start', maxWidth: 200 }}><span>✦</span></div>
-                        <p className="contact-intro">{content.intro?.body || 'Reach out to us for inquiries, donations, or to learn more about our foundation and the temple construction project.'}</p>
+                        <p className="contact-intro">{content.intro?.body || 'Reach out to us for inquiries, donations, or to learn more about our foundation.'}</p>
                         <div className="contact-details">
                             {settings.address && (
                                 <div className="contact-detail-item">
                                     <div className="contact-detail-icon">📍</div>
-                                    <div>
-                                        <div className="contact-detail-label">Address</div>
-                                        <div className="contact-detail-value">{settings.address}</div>
-                                    </div>
+                                    <div><div className="contact-detail-label">Address</div><div className="contact-detail-value">{settings.address}</div></div>
                                 </div>
                             )}
                             {settings.contactPhone && (
                                 <div className="contact-detail-item">
                                     <div className="contact-detail-icon">📞</div>
-                                    <div>
-                                        <div className="contact-detail-label">Phone</div>
-                                        <div className="contact-detail-value">{settings.contactPhone}</div>
-                                    </div>
+                                    <div><div className="contact-detail-label">Phone</div><div className="contact-detail-value">{settings.contactPhone}</div></div>
                                 </div>
                             )}
                             {settings.contactEmail && (
                                 <div className="contact-detail-item">
                                     <div className="contact-detail-icon">✉️</div>
-                                    <div>
-                                        <div className="contact-detail-label">Email</div>
-                                        <div className="contact-detail-value">{settings.contactEmail}</div>
-                                    </div>
+                                    <div><div className="contact-detail-label">Email</div><div className="contact-detail-value">{settings.contactEmail}</div></div>
                                 </div>
                             )}
                         </div>
                     </div>
-
-                    {/* Form */}
                     <div className="contact-form-card card">
                         <h3 style={{ marginBottom: 20, color: 'var(--maroon-dark)', fontFamily: "'Cinzel', serif" }}>Send us a Message</h3>
                         <form onSubmit={handleSubmit} className="contact-form">
@@ -100,10 +90,8 @@ export default function Contact() {
                                 <label className="form-label">Message *</label>
                                 <textarea name="message" value={form.message} onChange={handleChange} required placeholder="Write your message here…" className="form-textarea" rows={5} />
                             </div>
-
                             {status === 'success' && <div className="alert alert-success">✅ {msg}</div>}
                             {status === 'error' && <div className="alert alert-error">❌ {msg}</div>}
-
                             <button type="submit" className="btn btn-primary" style={{ width: '100%', justifyContent: 'center' }} disabled={status === 'sending'}>
                                 {status === 'sending' ? '⏳ Sending…' : '🙏 Send Message'}
                             </button>

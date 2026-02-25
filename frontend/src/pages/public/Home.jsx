@@ -1,9 +1,19 @@
 import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import api, { IMAGE_BASE } from '../../api/axios';
+import { cachedGet } from '../../api/cache';
 import './Home.css';
 
 const toArr = (v) => (Array.isArray(v) ? v : []);
+
+const fetchers = [
+    { key: 'settings', fn: () => api.get('/settings').then(r => r.data) },
+    { key: 'content/home', fn: () => api.get('/content/home').then(r => r.data) },
+    { key: 'gallery/home_banner', fn: () => api.get('/gallery?section=home_banner').then(r => r.data) },
+    { key: 'gallery/home_gallery', fn: () => api.get('/gallery?section=home_gallery').then(r => r.data) },
+    { key: 'gallery/progress', fn: () => api.get('/gallery?section=progress_update').then(r => r.data) },
+    { key: 'members/public', fn: () => api.get('/members').then(r => r.data) },
+];
 
 export default function Home() {
     const [settings, setSettings] = useState({});
@@ -15,21 +25,17 @@ export default function Home() {
     const [loading, setLoading] = useState(true);
 
     useEffect(() => {
-        Promise.all([
-            api.get('/settings'),
-            api.get('/content/home'),
-            api.get('/gallery?section=home_banner'),
-            api.get('/gallery?section=home_gallery'),
-            api.get('/gallery?section=progress_update'),
-            api.get('/members'),
-        ]).then(([s, c, hb, hg, up, mem]) => {
-            setSettings(s.data || {});
-            setContent(c.data || {});
-            setHeroBanner(toArr(hb.data));
-            setHomeGallery(toArr(hg.data).slice(0, 6));
-            setUpdates(toArr(up.data).slice(0, 4));
-            setMembers(toArr(mem.data).slice(0, 4));
-        }).catch(() => { }).finally(() => setLoading(false));
+        Promise.all(fetchers.map(f => cachedGet(f.fn, f.key)))
+            .then(([s, c, hb, hg, up, mem]) => {
+                setSettings(s || {});
+                setContent(c || {});
+                setHeroBanner(toArr(hb));
+                setHomeGallery(toArr(hg).slice(0, 6));
+                setUpdates(toArr(up).slice(0, 4));
+                setMembers(toArr(mem).slice(0, 4));
+            })
+            .catch(() => { })
+            .finally(() => setLoading(false));
     }, []);
 
     if (loading) return <div className="loader"><div className="spinner" /><p>Loading…</p></div>;
@@ -95,7 +101,7 @@ export default function Home() {
                         </h2>
                         <div className="ornamental-divider" style={{ justifyContent: 'flex-start', maxWidth: 200 }}><span>✦</span></div>
                         <p className="about-snippet-body">
-                            {content.about_snippet?.body || 'We are a registered foundation committed to constructing a temple for the community and conducting social welfare activities for the upliftment of society. Our foundation operates with full transparency and dedication.'}
+                            {content.about_snippet?.body || 'We are a registered foundation committed to constructing a temple for the community and conducting social welfare activities for the upliftment of society.'}
                         </p>
                         <Link to="/about" className="btn btn-primary" style={{ marginTop: 24 }}>Learn More</Link>
                     </div>
@@ -161,7 +167,7 @@ export default function Home() {
                 </section>
             )}
 
-            {/* ── Founder Members Snap ── */}
+            {/* ── Members Snap ── */}
             {members.length > 0 && (
                 <section className="section members-snap" style={{ background: 'var(--cream-dark)' }}>
                     <div className="container">

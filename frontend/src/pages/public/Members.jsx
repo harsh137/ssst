@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 import api, { IMAGE_BASE } from '../../api/axios';
+import { cachedGet } from '../../api/cache';
 import './Members.css';
 
 const toArr = (v) => (Array.isArray(v) ? v : []);
@@ -10,11 +11,11 @@ export default function Members() {
     const [loading, setLoading] = useState(true);
 
     useEffect(() => {
-        Promise.all([api.get('/members'), api.get('/content/members')])
-            .then(([m, c]) => {
-                setMembers(toArr(m.data));
-                setContent(c.data || {});
-            })
+        Promise.all([
+            cachedGet(() => api.get('/members').then(r => r.data), 'members/public'),
+            cachedGet(() => api.get('/content/members').then(r => r.data), 'content/members'),
+        ])
+            .then(([m, c]) => { setMembers(toArr(m)); setContent(c || {}); })
             .catch(() => { })
             .finally(() => setLoading(false));
     }, []);
@@ -29,7 +30,6 @@ export default function Members() {
                     <p>{content.hero?.body || 'The distinguished individuals who laid the foundation of our trust'}</p>
                 </div>
             </div>
-
             <section className="section">
                 <div className="container">
                     <div className="text-center" style={{ marginBottom: 48 }}>
@@ -39,7 +39,6 @@ export default function Members() {
                             {content.intro?.body || 'These are the visionary founders who came together with a shared goal of building a temple and serving the community.'}
                         </p>
                     </div>
-
                     {members.length === 0 ? (
                         <div className="empty-state">
                             <div className="empty-icon">👥</div>
