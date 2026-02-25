@@ -1,11 +1,16 @@
-import { useEffect, useState } from 'react';
-import api from '../../api/axios';
+import { useEffect, useState, useRef } from 'react';
+import api, { imgSrc } from '../../api/axios';
+
+// Sections that support an image upload (page → section → field in extra)
+const IMAGE_SECTIONS = {
+    'home_about_snippet': true,
+};
 
 const PAGES = [
     {
         page: 'home', label: '🏠 Home Page', sections: [
             { key: 'hero', label: 'Hero Section (Title & Subtitle)' },
-            { key: 'about_snippet', label: 'About Snippet (Home page)' },
+            { key: 'about_snippet', label: 'About Snippet (Home page)', hasImage: true },
             { key: 'gallery_section', label: 'Gallery Section Heading' },
             { key: 'updates_section', label: 'Progress Updates Heading' },
             { key: 'cta', label: 'Call-to-Action Banner' },
@@ -48,6 +53,8 @@ export default function ContentManager() {
     const [content, setContent] = useState({});
     const [saving, setSaving] = useState({});
     const [msgs, setMsgs] = useState({});
+    const [imgUploading, setImgUploading] = useState({});
+    const imgRefs = useRef({});
 
     const pageObj = PAGES.find(p => p.page === activePage);
 
@@ -76,6 +83,33 @@ export default function ContentManager() {
         }
     };
 
+    const uploadImage = async (page, section, file) => {
+        if (!file) return;
+        const key = `${page}_${section}_img`;
+        setImgUploading(s => ({ ...s, [key]: true }));
+        setMsgs(m => ({ ...m, [key]: '' }));
+        try {
+            const fd = new FormData();
+            fd.append('image', file);
+            const r = await api.post(`/content/${page}/${section}/image`, fd, { headers: { 'Content-Type': 'multipart/form-data' } });
+            // Update local state so preview refreshes immediately
+            setContent(c => ({
+                ...c,
+                [section]: {
+                    ...c[section],
+                    extra: { ...(c[section]?.extra || {}), imageUrl: r.data.imageUrl }
+                }
+            }));
+            setMsgs(m => ({ ...m, [key]: '✅ Image uploaded!' }));
+            if (imgRefs.current[key]) imgRefs.current[key].value = '';
+            setTimeout(() => setMsgs(m => ({ ...m, [key]: '' })), 3000);
+        } catch {
+            setMsgs(m => ({ ...m, [key]: '❌ Upload failed' }));
+        } finally {
+            setImgUploading(s => ({ ...s, [key]: false }));
+        }
+    };
+
     return (
         <div>
             <h1 className="admin-page-title">📝 Content Manager</h1>
@@ -92,33 +126,69 @@ export default function ContentManager() {
             </div>
 
             {/* Sections */}
-            {pageObj?.sections.map(({ key, label }) => (
-                <div key={key} className="admin-card">
-                    <div className="admin-card-title">{label}</div>
-                    <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
-                        <div className="form-group">
-                            <label className="form-label">Title</label>
-                            <input value={getVal(key, 'title')} onChange={e => setVal(key, 'title', e.target.value)} className="form-input" placeholder="Section title..." />
-                        </div>
-                        <div className="form-group">
-                            <label className="form-label">Body Text</label>
-                            <textarea value={getVal(key, 'body')} onChange={e => setVal(key, 'body', e.target.value)} className="form-textarea" rows={4} placeholder="Section body content..." />
-                        </div>
-                        <div style={{ display: 'flex', gap: 12, alignItems: 'center' }}>
-                            <button className="btn btn-primary btn-sm"
-                                onClick={() => save(activePage, key)}
-                                disabled={saving[`${activePage}_${key}`]}>
-                                {saving[`${activePage}_${key}`] ? '⏳ Saving…' : '💾 Save'}
-                            </button>
-                            {msgs[`${activePage}_${key}`] && (
-                                <span style={{ fontSize: '0.875rem', color: msgs[`${activePage}_${key}`].includes('✅') ? '#065F46' : '#991B1B' }}>
-                                    {msgs[`${activePage}_${key}`]}
-                                </span>
+            {pageObj?.sections.map(({ key, label, hasImage }) => {
+                const imgKey = `${activePage}_${key}_img`;
+                const currentImage = content[key]?.extra?.imageUrl;
+                return (
+                    <div key={key} className="admin-card">
+                        <div className="admin-card-title">{label}</div>
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+                            <div className="form-group">
+                                <label className="form-label">Title</label>
+                                <input value={getVal(key, 'title')} onChange={e => setVal(key, 'title', e.target.value)} className="form-input" placeholder="Section title..." />
+                            </div>
+                            <div className="form-group">
+                                <label className="form-label">Body Text</label>
+                                <textarea value={getVal(key, 'body')} onChange={e => setVal(key, 'body', e.target.value)} className="form-textarea" rows={4} placeholder="Section body content..." />
+                            </div>
+
+                            {/* Image upload — only for sections flagged hasImage */}
+                            {hasImage && (
+                                <div className="form-group" style={{ borderTop: '1px solid var(--cream-dark)', paddingTop: 12 }}>
+                                    <label className="form-label">📷 Section Image</label>
+                                    {currentImage && (
+                                        <img
+                                            src={imgSrc(currentImage)}
+                                            alt="Current"
+                                            style={{ width: '100%', maxHeight: 200, objectFit: 'cover', borderRadius: 8, marginBottom: 8 }}
+                                        />
+                                    )}
+                                    <div style={{ display: 'flex', gap: 12, alignItems: 'center', flexWrap: 'wrap' }}>
+                                        <input
+                                            ref={el => imgRefs.current[imgKey] = el}
+                                            type="file"
+                                            accept="image/*"
+                                            className="form-input"
+                                            style={{ flex: 1 }}
+                                            onChange={e => uploadImage(activePage, key, e.target.files[0])}
+                                        />
+                                        {imgUploading[imgKey] && <span style={{ fontSize: '0.875rem', color: 'var(--text-mid)' }}>⏳ Uploading…</span>}
+                                        {msgs[imgKey] && (
+                                            <span style={{ fontSize: '0.875rem', color: msgs[imgKey].includes('✅') ? '#065F46' : '#991B1B' }}>
+                                                {msgs[imgKey]}
+                                            </span>
+                                        )}
+                                    </div>
+                                    <small style={{ color: 'var(--text-light)' }}>Uploads immediately to Cloudinary on file select.</small>
+                                </div>
                             )}
+
+                            <div style={{ display: 'flex', gap: 12, alignItems: 'center' }}>
+                                <button className="btn btn-primary btn-sm"
+                                    onClick={() => save(activePage, key)}
+                                    disabled={saving[`${activePage}_${key}`]}>
+                                    {saving[`${activePage}_${key}`] ? '⏳ Saving…' : '💾 Save'}
+                                </button>
+                                {msgs[`${activePage}_${key}`] && (
+                                    <span style={{ fontSize: '0.875rem', color: msgs[`${activePage}_${key}`].includes('✅') ? '#065F46' : '#991B1B' }}>
+                                        {msgs[`${activePage}_${key}`]}
+                                    </span>
+                                )}
+                            </div>
                         </div>
                     </div>
-                </div>
-            ))}
+                );
+            })}
         </div>
     );
 }
