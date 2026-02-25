@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
-import api, { IMAGE_BASE } from '../../api/axios';
+import api, { imgSrc } from '../../api/axios';
 import { cachedGet } from '../../api/cache';
 import './Home.css';
 
@@ -41,9 +41,9 @@ export default function Home() {
     if (loading) return <div className="loader"><div className="spinner" /><p>Loading…</p></div>;
 
     const heroBg = heroBanner[0]?.url
-        ? `${IMAGE_BASE}${heroBanner[0].url}`
+        ? imgSrc(heroBanner[0].url)
         : settings.heroBannerUrl
-            ? `${IMAGE_BASE}${settings.heroBannerUrl}`
+            ? imgSrc(settings.heroBannerUrl)
             : null;
 
     return (
@@ -108,7 +108,7 @@ export default function Home() {
                     <div className="about-snippet-img">
                         <div className="about-img-frame">
                             {content.about_snippet?.extra?.imageUrl ? (
-                                <img src={`${IMAGE_BASE}${content.about_snippet.extra.imageUrl}`} alt="About" />
+                                <img src={imgSrc(content.about_snippet.extra.imageUrl)} alt="About" />
                             ) : (
                                 <div className="img-placeholder" style={{ height: '100%', borderRadius: 16, minHeight: 280, fontSize: '4rem' }}>🛕</div>
                             )}
@@ -129,7 +129,7 @@ export default function Home() {
                         <div className="gallery-grid">
                             {homeGallery.map(img => (
                                 <div key={img._id} className="gallery-card card">
-                                    <img src={`${IMAGE_BASE}${img.url}`} alt={img.caption} loading="lazy" />
+                                    <img src={imgSrc(img.url)} alt={img.caption} loading="lazy" />
                                     {img.caption && <div className="gallery-card-caption">{img.caption}</div>}
                                 </div>
                             ))}
@@ -154,7 +154,7 @@ export default function Home() {
                             {updates.map(img => (
                                 <div key={img._id} className="update-card card">
                                     <div className="update-img-wrap">
-                                        <img src={`${IMAGE_BASE}${img.url}`} alt={img.caption} loading="lazy" />
+                                        <img src={imgSrc(img.url)} alt={img.caption} loading="lazy" />
                                         <div className="update-overlay">
                                             <span className="badge badge-saffron">Update</span>
                                         </div>
@@ -181,7 +181,7 @@ export default function Home() {
                                 <div key={m._id} className="member-snap-card card">
                                     <div className="member-snap-photo">
                                         {m.photoUrl
-                                            ? <img src={`${IMAGE_BASE}${m.photoUrl}`} alt={m.name} />
+                                            ? <img src={imgSrc(m.photoUrl)} alt={m.name} />
                                             : <div className="img-placeholder member-placeholder">👤</div>
                                         }
                                     </div>

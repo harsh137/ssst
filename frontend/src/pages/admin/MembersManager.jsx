@@ -1,7 +1,8 @@
 import { useEffect, useState, useRef } from 'react';
-import api from '../../api/axios';
+import api, { IMAGE_BASE } from '../../api/axios';
 
-const API_BASE = 'http://localhost:5000';
+// Handle both Cloudinary full URLs and legacy local paths
+const imgSrc = (url) => !url ? '' : url.startsWith('http') ? url : `${IMAGE_BASE}${url}`;
 
 export default function MembersManager() {
     const [members, setMembers] = useState([]);
@@ -102,7 +103,7 @@ export default function MembersManager() {
                                     <tr key={m._id}>
                                         <td>
                                             {m.photoUrl
-                                                ? <img src={`${API_BASE}${m.photoUrl}`} alt="" className="img-thumb" style={{ borderRadius: '50%' }} />
+                                                ? <img src={imgSrc(m.photoUrl)} alt="" className="img-thumb" style={{ borderRadius: '50%' }} />
                                                 : <div className="img-thumb" style={{ borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '1.2rem', background: 'var(--cream-dark)' }}>👤</div>
                                             }
                                         </td>

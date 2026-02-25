@@ -8,8 +8,13 @@ export const IMAGE_BASE = import.meta.env.VITE_API_URL
     ? import.meta.env.VITE_API_URL.replace('/api', '')
     : 'http://localhost:5000';
 
-const api = axios.create({ baseURL: API_BASE });
+// Smart image URL resolver:
+// - Full Cloudinary URL (https://...) → returned as-is
+// - Legacy local path (/uploads/...) → prefixed with IMAGE_BASE
+export const imgSrc = (url) =>
+    !url ? '' : url.startsWith('http') ? url : `${IMAGE_BASE}${url}`;
 
+const api = axios.create({ baseURL: API_BASE });
 
 // Attach JWT token to every request if available
 api.interceptors.request.use((config) => {

@@ -1,5 +1,5 @@
-import { useEffect, useState } from 'react';
-import api, { IMAGE_BASE } from '../../api/axios';
+﻿import { useEffect, useState } from 'react';
+import api, { imgSrc } from '../../api/axios';
 import { cachedGet } from '../../api/cache';
 import './Members.css';
 
@@ -20,7 +20,7 @@ export default function Members() {
             .finally(() => setLoading(false));
     }, []);
 
-    if (loading) return <div className="loader"><div className="spinner" /><p>Loading…</p></div>;
+    if (loading) return <div className="loader"><div className="spinner" /><p>Loadingâ€¦</p></div>;
 
     return (
         <div className="members-page">
@@ -41,7 +41,7 @@ export default function Members() {
                     </div>
                     {members.length === 0 ? (
                         <div className="empty-state">
-                            <div className="empty-icon">👥</div>
+                            <div className="empty-icon">ðŸ‘¥</div>
                             <p>Member list will be updated soon.</p>
                         </div>
                     ) : (
@@ -50,8 +50,8 @@ export default function Members() {
                                 <div key={m._id} className="member-card card fade-up" style={{ animationDelay: `${i * 0.05}s` }}>
                                     <div className="member-photo-wrap">
                                         {m.photoUrl
-                                            ? <img src={`${IMAGE_BASE}${m.photoUrl}`} alt={m.name} className="member-photo" />
-                                            : <div className="member-photo-placeholder">👤</div>
+                                            ? <img src={`${imgSrc(m.photoUrl)}`} alt={m.name} className="member-photo" />
+                                            : <div className="member-photo-placeholder">ðŸ‘¤</div>
                                         }
                                         <div className="member-number">#{String(i + 1).padStart(2, '0')}</div>
                                     </div>
@@ -69,3 +69,4 @@ export default function Members() {
         </div>
     );
 }
+

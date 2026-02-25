@@ -1,11 +1,11 @@
-import { useEffect, useState } from 'react';
-import api, { IMAGE_BASE } from '../../api/axios';
+﻿import { useEffect, useState } from 'react';
+import api, { imgSrc } from '../../api/axios';
 import { cachedGet } from '../../api/cache';
 import './Gallery.css';
 
 const toArr = (v) => (Array.isArray(v) ? v : []);
 const CATEGORIES = ['all', 'construction', 'welfare', 'events', 'general'];
-const labelMap = { all: 'All', construction: '🏗️ Construction', welfare: '🤝 Social Welfare', events: '🎉 Events', general: '📷 General' };
+const labelMap = { all: 'All', construction: 'ðŸ—ï¸ Construction', welfare: 'ðŸ¤ Social Welfare', events: 'ðŸŽ‰ Events', general: 'ðŸ“· General' };
 
 export default function Gallery() {
     const [images, setImages] = useState([]);
@@ -39,7 +39,7 @@ export default function Gallery() {
         setFiltered(cat === 'all' ? images : images.filter(i => i.category === cat));
     };
 
-    if (loading) return <div className="loader"><div className="spinner" /><p>Loading…</p></div>;
+    if (loading) return <div className="loader"><div className="spinner" /><p>Loadingâ€¦</p></div>;
 
     return (
         <div className="gallery-page">
@@ -60,16 +60,16 @@ export default function Gallery() {
                     </div>
                     {filtered.length === 0 ? (
                         <div className="empty-state">
-                            <div style={{ fontSize: '3rem', marginBottom: 12 }}>📷</div>
+                            <div style={{ fontSize: '3rem', marginBottom: 12 }}>ðŸ“·</div>
                             <p>No photos in this category yet.</p>
                         </div>
                     ) : (
                         <div className="gallery-masonry">
                             {filtered.map(img => (
                                 <div key={img._id} className="gallery-item" onClick={() => setLightbox(img)}>
-                                    <img src={`${IMAGE_BASE}${img.url}`} alt={img.caption} loading="lazy" />
+                                    <img src={`${imgSrc(img.url)}`} alt={img.caption} loading="lazy" />
                                     <div className="gallery-item-overlay">
-                                        <span className="gallery-item-zoom">🔍</span>
+                                        <span className="gallery-item-zoom">ðŸ”</span>
                                         {img.caption && <div className="gallery-item-caption">{img.caption}</div>}
                                     </div>
                                 </div>
@@ -81,8 +81,8 @@ export default function Gallery() {
             {lightbox && (
                 <div className="lightbox" onClick={() => setLightbox(null)}>
                     <div className="lightbox-inner" onClick={e => e.stopPropagation()}>
-                        <button className="lightbox-close" onClick={() => setLightbox(null)}>✕</button>
-                        <img src={`${IMAGE_BASE}${lightbox.url}`} alt={lightbox.caption} />
+                        <button className="lightbox-close" onClick={() => setLightbox(null)}>âœ•</button>
+                        <img src={`${imgSrc(lightbox.url)}`} alt={lightbox.caption} />
                         {lightbox.caption && <div className="lightbox-caption">{lightbox.caption}</div>}
                     </div>
                 </div>
@@ -90,3 +90,4 @@ export default function Gallery() {
         </div>
     );
 }
+

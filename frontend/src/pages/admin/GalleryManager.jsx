@@ -1,10 +1,12 @@
 import { useEffect, useState, useRef } from 'react';
-import api from '../../api/axios';
+import api, { IMAGE_BASE } from '../../api/axios';
 
-const API_BASE = 'http://localhost:5000';
 const SECTIONS = ['home_banner', 'home_gallery', 'gallery_page', 'progress_update', 'none'];
 const CATEGORIES = ['general', 'construction', 'welfare', 'events'];
 const SECTION_LABELS = { home_banner: '🏠 Home Banner', home_gallery: '🏠 Home Gallery', gallery_page: '📷 Gallery Page', progress_update: '🏗️ Progress Update', none: '🚫 Hidden' };
+
+// Handle both Cloudinary full URLs and legacy local paths
+const imgSrc = (url) => !url ? '' : url.startsWith('http') ? url : `${IMAGE_BASE}${url}`;
 
 export default function GalleryManager() {
     const [images, setImages] = useState([]);
@@ -45,20 +47,9 @@ export default function GalleryManager() {
     };
 
     const startEdit = img => { setEditId(img._id); setEditData({ caption: img.caption, category: img.category, displaySection: img.displaySection, isActive: img.isActive, order: img.order }); };
-    const saveEdit = async id => {
-        await api.put(`/gallery/${id}`, editData);
-        setEditId(null);
-        load();
-    };
-    const toggleActive = async img => {
-        await api.put(`/gallery/${img._id}`, { ...img, isActive: !img.isActive });
-        load();
-    };
-    const deleteImg = async id => {
-        if (!confirm('Delete this image permanently?')) return;
-        await api.delete(`/gallery/${id}`);
-        load();
-    };
+    const saveEdit = async id => { await api.put(`/gallery/${id}`, editData); setEditId(null); load(); };
+    const toggleActive = async img => { await api.put(`/gallery/${img._id}`, { ...img, isActive: !img.isActive }); load(); };
+    const deleteImg = async id => { if (!confirm('Delete this image permanently?')) return; await api.delete(`/gallery/${id}`); load(); };
 
     return (
         <div>
@@ -111,7 +102,7 @@ export default function GalleryManager() {
                                 {images.map(img => (
                                     <tr key={img._id}>
                                         <td>
-                                            <img src={`${API_BASE}${img.url}`} alt="" className="img-thumb" />
+                                            <img src={imgSrc(img.url)} alt="" className="img-thumb" />
                                         </td>
                                         <td>
                                             {editId === img._id
